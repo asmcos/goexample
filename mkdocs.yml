@@ -1,0 +1,9 @@
+site_name: golang 部分代码解析 
+pages:
+    - 开始: index.md
+
+theme:
+  name: 'material'
+markdown_extensions:
+  - admonition
+  - codehilite
