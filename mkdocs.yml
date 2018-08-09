@@ -1,6 +1,7 @@
-site_name: golang 部分代码解析 
+site_name: golang 部分代码解析
 pages:
     - 开始: index.md
+    - net: net.md
 
 theme:
   name: 'material'
