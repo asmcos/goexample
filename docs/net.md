@@ -35,9 +35,9 @@ func main (){
 ```
 
 !!! Dial源代码都调用了哪些系统调用
-  sock_posix.go  文件里有posix 的系统调用方法
+    sock_posix.go  文件里有posix 的系统调用方法
 
-  * 1. 创建socket
-  * 2. connect
-  * 3. getsockname
-  * 4. getpeername
+    * 创建socket
+    * connect
+    * getsockname
+    * getpeername
