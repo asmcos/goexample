@@ -117,3 +117,94 @@ lt, _ := net.LookupAddr("127.0.0.1")
 fmt.Println(lt) //[localhost],根据地址查找到改地址的一个映射列表
 
 ```
+
+## 寻找主机名
+
+    LookupCNAME 返回规范名，符合DNS的CNAME规则的。
+    LookupHost或LookupIP 返回非规范名
+
+##  SplitHostPort
+
+     func SplitHostPort(hostport string) (host, port string, err error)
+
+把网络格式分析成host 和port ，网络格式包含："host:port", "host%zone:port", "[host]:port" or "[host%zone]:port"
+
+
+## Buffers
+
+    type Buffers [][]byte
+    func (v *Buffers) Read(p []byte) (n int, err error)
+    func (v *Buffers) WriteTo(w io.Writer) (n int64, err error)
+
+包含0个，1个或者多个 要写的内容。 writev，read的时候使用。
+
+
+## Conn
+
+
+```
+type Conn interface {
+    // Read reads data from the connection.
+    // Read can be made to time out and return an Error with Timeout() == true
+    // after a fixed time limit; see SetDeadline and SetReadDeadline.
+    Read(b []byte) (n int, err error) //从连接读书句
+
+    // Write writes data to the connection.
+    // Write can be made to time out and return an Error with Timeout() == true
+    // after a fixed time limit; see SetDeadline and SetWriteDeadline.
+    Write(b []byte) (n int, err error) //发送数据到连接
+
+    // Close closes the connection.
+    // Any blocked Read or Write operations will be unblocked and return errors.
+    Close() error
+
+    // LocalAddr returns the local network address.
+    LocalAddr() Addr  //本机地址
+
+    // RemoteAddr returns the remote network address.
+    RemoteAddr() Addr //远程地址
+
+    // SetDeadline sets the read and write deadlines associated
+    // with the connection. It is equivalent to calling both
+    // SetReadDeadline and SetWriteDeadline.
+    //
+    // A deadline is an absolute time after which I/O operations
+    // fail with a timeout (see type Error) instead of
+    // blocking. The deadline applies to all future and pending
+    // I/O, not just the immediately following call to Read or
+    // Write. After a deadline has been exceeded, the connection
+    // can be refreshed by setting a deadline in the future.
+    //
+    // An idle timeout can be implemented by repeatedly extending
+    // the deadline after successful Read or Write calls.
+    //
+    // A zero value for t means I/O operations will not time out.
+    SetDeadline(t time.Time) error  //操作的timeout值，0表示不timeout
+
+    // SetReadDeadline sets the deadline for future Read calls
+    // and any currently-blocked Read call.
+    // A zero value for t means Read will not time out.
+    SetReadDeadline(t time.Time) error
+
+    // SetWriteDeadline sets the deadline for future Write calls
+    // and any currently-blocked Write call.
+    // Even if write times out, it may return n > 0, indicating that
+    // some of the data was successfully written.
+    // A zero value for t means Write will not time out.
+    SetWriteDeadline(t time.Time) error
+}
+
+```
+
+## DialTimeout
+
+带Timeout 的Dial
+
+##  Pipe
+    func Pipe（）（Conn，Conn）
+
+在内存里将两个conn 同步，建立一个全双工网络。读的一端和写的一端是完全匹配的。两者的数据直接复制，没有任何缓存。
+
+例如： Pipe(Conn1,Conn2)  
+如果程序向Conn1 写的内容，通过Conn2能读取。
+如果程序向Conn2 写的内容，通过Conn1也能读取。
