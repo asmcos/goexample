@@ -208,3 +208,55 @@ type Conn interface {
 例如： Pipe(Conn1,Conn2)  
 如果程序向Conn1 写的内容，通过Conn2能读取。
 如果程序向Conn2 写的内容，通过Conn1也能读取。
+
+## Listener
+
+```
+type Listener interface {
+    // Accept waits for and returns the next connection to the listener.
+    Accept() (Conn, error)
+
+    // Close closes the listener.
+    // Any blocked Accept operations will be unblocked and return errors.
+    Close() error
+
+    // Addr returns the listener's network address.
+    Addr() Addr
+}
+
+```
+
+代码例子
+
+```
+// Listen on TCP port 2000 on all available unicast and
+// anycast IP addresses of the local system.
+l, err := net.Listen("tcp", ":2000") //监听2000端口，返回Listener
+if err != nil {
+    log.Fatal(err)
+}
+defer l.Close()
+for {
+    // Wait for a connection.
+    conn, err := l.Accept() //接受到一个新的连接
+    if err != nil {
+        log.Fatal(err)
+    }
+    // Handle the connection in a new goroutine.
+    // The loop then returns to accepting, so that
+    // multiple connections may be served concurrently.
+    go func(c net.Conn) {
+        // Echo all incoming data.
+        io.Copy(c, c)
+        // Shut down the connection.
+        c.Close()
+    }(conn)  // 启动一个线程处理这个新的连接，系统接着到Accept等待其他连接
+}
+```
+
+## Listen
+
+     func Listen(network, address string) (Listener, error)
+
+监听本机网络消息，网络必须是“tcp”，“tcp4”，“tcp6”，“unix”或“unixpacket”。
+对于TCP网络，如果address参数中的主机为空或文本未指定的IP地址，则Listen将侦听本地系统的所有可用单播和任播IP地址。如果仅仅接收IPv4网络，请使用网络“tcp4”。地址可以使用主机名，但不推荐这样做，因为它将为主机的其中一个（most one）IP地址创建一个监听器。如果address参数中的端口为空或“0”，如“127.0.0.1：”或“[:: 1]：0”，则自动选择端口号。Listener的Addr方法可用于发现所选端口。
