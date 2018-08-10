@@ -259,4 +259,33 @@ for {
      func Listen(network, address string) (Listener, error)
 
 监听本机网络消息，网络必须是“tcp”，“tcp4”，“tcp6”，“unix”或“unixpacket”。
-对于TCP网络，如果address参数中的主机为空或文本未指定的IP地址，则Listen将侦听本地系统的所有可用单播和任播IP地址。如果仅仅接收IPv4网络，请使用网络“tcp4”。地址可以使用主机名，但不推荐这样做，因为它将为主机的其中一个（most one）IP地址创建一个监听器。如果address参数中的端口为空或“0”，如“127.0.0.1：”或“[:: 1]：0”，则自动选择端口号。Listener的Addr方法可用于发现所选端口。
+
+对于TCP网络，如果address参数中的主机为空或文本未指定的IP地址，则Listen将侦听本地系统的所有可用单播和任播IP地址。
+
+如果仅仅接收IPv4网络，请使用网络“tcp4”。地址可以使用主机名，但不推荐这样做，因为它将为主机的其中一个（most one）IP地址创建一个监听器。
+
+如果address参数中的端口为空或“0”，如“127.0.0.1：”或“[:: 1]：0”，则自动选择端口号。Listener的Addr方法可用于发现所选端口。
+
+## ListenPacket
+
+       func ListenPacket(network, address string) (PacketConn, error)
+
+返回的是PacketConn， PacketConn支持以下和Conn不同的接口
+
+``` go
+ReadFrom(b []byte) (n int, addr Addr, err error)
+
+// WriteTo writes a packet with payload b to addr.
+// WriteTo can be made to time out and return
+// an Error with Timeout() == true after a fixed time limit;
+// see SetDeadline and SetWriteDeadline.
+// On packet-oriented connections, write timeouts are rare.
+WriteTo(b []byte, addr Addr) (n int, err error)
+```
+
+!!! 其他内容
+    TCPConn，ListenTCP
+    UDPConn，ListenUDP
+    UnixConn，ListenUnix
+
+这里我不再一一列出。
