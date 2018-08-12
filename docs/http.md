@@ -590,7 +590,7 @@ AddCookie为请求添加了一个cookie。根据RFC 6265第5.4节，AddCookie不
 ##  Response
 
 
- ```
+```
  type Response struct {
     Status     string // e.g. "200 OK"
     StatusCode int    // e.g. 200
