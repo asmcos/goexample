@@ -4,13 +4,25 @@ import (
 	"testing"
 )
 
-func TestNew(t *testing.T) {
+func TestGet(t *testing.T) {
+	// example 1
 	req := Requests()
 
-	Requests().Get("http://www.cpython.org", Params{"a": "b"})
+	req.Header.Set("accept-encoding", "gzip, deflate, br")
+	req.Get("http://go.xiulian.net.cn", Header{"Content-Length": "0"}, Params{"c": "d", "e": "f"}, Params{"c": "a"})
 
-	req.Get("http://go.xiulian.net.cn", Header{"Content-length": "0"}, Params{"c": "d", "e": "f"}, Params{"c": "a"})
+	// example 2
+	h := Header{"Referer": "http://www.jeapedu.com",
+		"Accept-Language": "zh-CN,zh;q=0.9,en;q=0.8"}
 
-	Get("http://jeapedu.com")
+	Get("http://jeapedu.com", h, Header{"Content-Length": "1024"})
+
+	// example 3
+	p := Params{
+		"title": "The blog",
+		"name":  "file",
+		"id":    "12345",
+	}
+	Requests().Get("http://www.cpython.org", p)
 
 }

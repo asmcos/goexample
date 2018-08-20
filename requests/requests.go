@@ -9,6 +9,7 @@ import (
 
 type request struct {
 	httpreq *http.Request
+	Header  *http.Header
 }
 
 type response struct {
@@ -29,7 +30,7 @@ func Requests() *request {
 		ProtoMajor: 1,
 		ProtoMinor: 1,
 	}
-
+	req.Header = &req.httpreq.Header
 	req.httpreq.Header.Set("User-Agent", "Go-Requests")
 
 	return req
@@ -38,29 +39,38 @@ func Requests() *request {
 func Get(origurl string, args ...interface{}) {
 	req := Requests()
 
-	req.Get(origurl, args)
+	// call request Get
+	req.Get(origurl, args...)
 }
 
 func (req *request) Get(origurl string, args ...interface{}) {
 	// set params ?a=b&b=c
 	//set Header
 	params := []map[string]string{}
+
 	for _, arg := range args {
 		switch a := arg.(type) {
+		// arg is Header , set to request header
 		case Header:
-			fmt.Println("header")
-			fmt.Println(a)
+
+			for k, v := range a {
+				req.Header.Set(k, v)
+			}
+			// arg is "GET" params
+			// ?title=website&id=1860&from=login
 		case Params:
 			params = append(params, a)
 		}
 	}
 
-	//
 	disturl, _ := buildURLParams(origurl, params...)
 
 	fmt.Println(disturl)
+	fmt.Println(req.Header)
+
 }
 
+// handle URL params
 func buildURLParams(userURL string, params ...map[string]string) (string, error) {
 	parsedURL, err := url.Parse(userURL)
 
