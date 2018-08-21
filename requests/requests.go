@@ -1,12 +1,13 @@
 package requests
 
 import (
-	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
 	"strings"
 )
+
+var VERSION string = "0.2"
 
 type request struct {
 	httpreq *http.Request
@@ -35,7 +36,7 @@ func Requests() *request {
 		ProtoMinor: 1,
 	}
 	req.Header = &req.httpreq.Header
-	req.httpreq.Header.Set("User-Agent", "Go-Requests")
+	req.httpreq.Header.Set("User-Agent", "Go-Requests "+VERSION)
 
 	req.Client = &http.Client{}
 
@@ -79,8 +80,6 @@ func (req *request) Get(origurl string, args ...interface{}) (resp *response) {
 	}
 	req.httpreq.URL = URL
 
-	fmt.Println(req.Header)
-
 	res, err := req.Client.Do(req.httpreq)
 
 	if err != nil {
@@ -122,20 +121,22 @@ func addQueryParams(parsedURL *url.URL, parsedQuery url.Values) string {
 }
 
 /**************/
-func (resp *response) Content() {
+func (resp *response) Content() []byte {
 
 	defer resp.httpresp.Body.Close()
 	var err error
 	resp.content, err = ioutil.ReadAll(resp.httpresp.Body)
 	if err != nil {
-		return
+		return nil
 	}
 
+	return resp.content
 }
 
-func (resp *response) Text() {
+func (resp *response) Text() string {
 	if resp.content == nil {
 		resp.Content()
 	}
 	resp.text = string(resp.content)
+	return resp.text
 }
