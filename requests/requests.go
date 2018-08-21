@@ -2,6 +2,7 @@ package requests
 
 import (
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"net/url"
 	"strings"
@@ -10,10 +11,13 @@ import (
 type request struct {
 	httpreq *http.Request
 	Header  *http.Header
+	Client  *http.Client
 }
 
 type response struct {
 	httpresp *http.Response
+	content  []byte
+	text     string
 }
 
 type Header map[string]string
@@ -33,17 +37,20 @@ func Requests() *request {
 	req.Header = &req.httpreq.Header
 	req.httpreq.Header.Set("User-Agent", "Go-Requests")
 
+	req.Client = &http.Client{}
+
 	return req
 }
 
-func Get(origurl string, args ...interface{}) {
+func Get(origurl string, args ...interface{}) (resp *response) {
 	req := Requests()
 
 	// call request Get
-	req.Get(origurl, args...)
+	resp = req.Get(origurl, args...)
+	return resp
 }
 
-func (req *request) Get(origurl string, args ...interface{}) {
+func (req *request) Get(origurl string, args ...interface{}) (resp *response) {
 	// set params ?a=b&b=c
 	//set Header
 	params := []map[string]string{}
@@ -65,9 +72,24 @@ func (req *request) Get(origurl string, args ...interface{}) {
 
 	disturl, _ := buildURLParams(origurl, params...)
 
-	fmt.Println(disturl)
+	//prepare to Do
+	URL, err := url.Parse(disturl)
+	if err != nil {
+		return nil
+	}
+	req.httpreq.URL = URL
+
 	fmt.Println(req.Header)
 
+	res, err := req.Client.Do(req.httpreq)
+
+	if err != nil {
+		return nil
+	}
+
+	resp = &response{}
+	resp.httpresp = res
+	return resp
 }
 
 // handle URL params
@@ -97,4 +119,23 @@ func addQueryParams(parsedURL *url.URL, parsedQuery url.Values) string {
 		return strings.Join([]string{strings.Replace(parsedURL.String(), "?"+parsedURL.RawQuery, "", -1), parsedQuery.Encode()}, "?")
 	}
 	return strings.Replace(parsedURL.String(), "?"+parsedURL.RawQuery, "", -1)
+}
+
+/**************/
+func (resp *response) Content() {
+
+	defer resp.httpresp.Body.Close()
+	var err error
+	resp.content, err = ioutil.ReadAll(resp.httpresp.Body)
+	if err != nil {
+		return
+	}
+
+}
+
+func (resp *response) Text() {
+	if resp.content == nil {
+		resp.Content()
+	}
+	resp.text = string(resp.content)
 }
