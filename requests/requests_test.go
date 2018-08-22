@@ -29,5 +29,13 @@ func TestGet(t *testing.T) {
 	resp := Requests().Get("http://www.cpython.org", p)
 
 	resp.Text()
-	fmt.Println(resp.text)
+
+  // example 4
+  // test authentication usernae,password
+	//documentation https://www.httpwatch.com/httpgallery/authentication/#showExample10
+	req = Requests()
+	resp = req.Get("https://www.httpwatch.com/httpgallery/authentication/authenticatedimage/default.aspx?0.45874470316137206",Auth{"httpwatch","foo"})
+	fmt.Println(resp.httpresp)
+
+  
 }

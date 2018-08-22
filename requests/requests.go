@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+	//"fmt"
 )
 
 var VERSION string = "0.2"
@@ -23,6 +24,9 @@ type response struct {
 
 type Header map[string]string
 type Params map[string]string
+
+// {username,password}
+type Auth []string
 
 func Requests() *request {
 
@@ -68,6 +72,9 @@ func (req *request) Get(origurl string, args ...interface{}) (resp *response) {
 			// ?title=website&id=1860&from=login
 		case Params:
 			params = append(params, a)
+		case Auth:
+			// a{username,password}
+			req.httpreq.SetBasicAuth(a[0],a[1])
 		}
 	}
 
