@@ -29,6 +29,7 @@ func TestGet(t *testing.T) {
 	resp := Requests().Get("http://www.cpython.org", p)
 
 	resp.Text()
+	fmt.Println(resp.Text())
 
   // example 4
   // test authentication usernae,password
@@ -37,5 +38,34 @@ func TestGet(t *testing.T) {
 	resp = req.Get("https://www.httpwatch.com/httpgallery/authentication/authenticatedimage/default.aspx?0.45874470316137206",Auth{"httpwatch","foo"})
 	fmt.Println(resp.httpresp)
 
-  
+  // this save file test PASS
+	// resp.SaveFile("auth.jpeg")
+
+	//example 5 test Json
+	req = Requests()
+	req.Header.Set("Content-Type","application/json")
+	resp = req.Get("https://httpbin.org/json")
+
+	var json map[string]interface{}
+  resp.Json(&json)
+
+	for k,v := range json{
+		fmt.Println(k,v)
+	}
+
+ // example 6 test gzip
+ req = Requests()
+ req.Debug = 1
+ resp = req.Get("https://httpbin.org/gzip")
+
+ fmt.Println(resp.Text())
+
+ // example 7 proxy and debug
+ req = Requests()
+ req.Debug = 1
+ req.Proxy("http://192.168.1.190:8888")
+
+ resp = req.Get("https://www.sina.com.cn")
+ // fmt.Println(resp.Text())
+
 }
