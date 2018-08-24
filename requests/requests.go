@@ -11,6 +11,7 @@ import (
 	"encoding/json"
 	"os"
 	"crypto/tls"
+	"net/http/cookiejar"
 
 )
 
@@ -51,6 +52,13 @@ func Requests() *request {
 	req.httpreq.Header.Set("User-Agent", "Go-Requests "+VERSION)
 
 	req.Client = &http.Client{}
+
+  // auto with Cookies
+	jar, err := cookiejar.New(nil)
+	if err != nil {
+			return nil
+	}
+	req.Client.Jar = jar
 
 	return req
 }
@@ -111,7 +119,6 @@ func (req *request) Get(origurl string, args ...interface{}) (resp *response) {
 	resp = &response{}
 	resp.httpresp = res
 	resp.req = req
-
 	resp.ResponseDebug()
 	return resp
 }
@@ -193,6 +200,7 @@ func (resp *response) ResponseDebug(){
 	}
 
 	fmt.Println(string(message))
+
 }
 
 func (resp *response) Content() []byte {
