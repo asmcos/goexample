@@ -2,6 +2,7 @@ package requests
 
 import (
 	"fmt"
+	"net/http"
 	"testing"
 )
 
@@ -63,18 +64,38 @@ func TestGet(t *testing.T) {
  // example 7 proxy and debug
  req = Requests()
  req.Debug = 1
- req.Proxy("http://192.168.1.190:8888")
+ //req.Proxy("http://192.168.1.190:8888")
 
  resp = req.Get("https://www.sina.com.cn")
  // fmt.Println(resp.Text())
  req.Get("https://www.sina.com.cn")
 
- //example 8 test Cookies
+ //example 8 test  auto Cookies
  req = Requests()
  req.Debug = 1
- req.Proxy("http://192.168.1.190:8888")
+ // req.Proxy("http://192.168.1.190:8888")
  req.Get("https://www.httpbin.org/cookies/set?freeform=1234")
  req.Get("https://www.httpbin.org")
  req.Get("https://www.httpbin.org/cookies/set?a=33d")
  req.Get("https://www.httpbin.org")
+
+  // example 9 test AddCookie
+	req = Requests()
+	req.Debug = 1
+
+	cookie := & http.Cookie{}
+  cookie.Name   = "anewcookie"
+  cookie.Value  = "20180825"
+	cookie.Path   = "/"  
+
+	req.SetCookie(cookie)
+
+
+  fmt.Println(req.Cookies)
+  // req.Proxy("http://127.0.0.1:8888")
+	req.Get("https://www.httpbin.org/cookies/set?freeform=1234")
+	req.Get("https://www.httpbin.org")
+	req.Get("https://www.httpbin.org/cookies/set?a=33d")
+	req.Get("https://www.httpbin.org")
+
 }

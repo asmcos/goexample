@@ -15,13 +15,14 @@ import (
 
 )
 
-var VERSION string = "0.3"
+var VERSION string = "0.4"
 
 type request struct {
 	httpreq *http.Request
 	Header  *http.Header
 	Client  *http.Client
 	Debug   int
+	Cookies []*http.Cookie
 }
 
 type response struct {
@@ -76,6 +77,10 @@ func (req *request) Get(origurl string, args ...interface{}) (resp *response) {
 	//set Header
 	params := []map[string]string{}
 
+  //reset Cookies,
+	//Client.Do can copy cookie from client.Jar to req.Header
+	delete(req.httpreq.Header,"Cookie")
+
 	for _, arg := range args {
 		switch a := arg.(type) {
 		// arg is Header , set to request header
@@ -103,9 +108,9 @@ func (req *request) Get(origurl string, args ...interface{}) (resp *response) {
 	}
 	req.httpreq.URL = URL
 
+	req.ClientSetCookies()
 
 	req.RequestDebug()
-
 
 	res, err := req.Client.Do(req.httpreq)
 
@@ -113,8 +118,6 @@ func (req *request) Get(origurl string, args ...interface{}) (resp *response) {
 		fmt.Println(err)
 		return nil
 	}
-
-
 
 	resp = &response{}
 	resp.httpresp = res
@@ -159,13 +162,38 @@ func (req *request) RequestDebug(){
 		return
 	}
 
-	fmt.Println("===========Go RequestDebug libaray ============")
+	fmt.Println("===========Go RequestDebug ============")
 
 	message, err := httputil.DumpRequestOut(req.httpreq, false)
 	if err != nil {
 		return
 	}
   fmt.Println(string(message))
+
+	if len(req.Client.Jar.Cookies(req.httpreq.URL)) > 0{
+		fmt.Println("Cookies:")
+		for _, cookie := range req.Client.Jar.Cookies(req.httpreq.URL) {
+	            fmt.Println(cookie)
+	  }
+	}
+}
+
+func (req *request ) SetCookie(cookie *http.Cookie){
+	req.Cookies = append(req.Cookies,cookie)
+}
+
+func (req * request) ClearCookies(){
+	req.Cookies = req.Cookies[0:0]
+}
+
+func (req * request) ClientSetCookies(){
+
+	if len(req.Cookies) > 0 {
+		// 1. Cookies have content, Copy Cookies to Client.jar
+		// 2. Clear  Cookies
+		req.Client.Jar.SetCookies(req.httpreq.URL, req.Cookies)
+		req.ClearCookies()
+	}
 
 }
 
@@ -192,7 +220,7 @@ func (resp *response) ResponseDebug(){
 		return
 	}
 
-	fmt.Println("===========Go ResponseDebug libaray ============")
+	fmt.Println("===========Go ResponseDebug ============")
 
 	message, err := httputil.DumpResponse(resp.httpresp, false)
 	if err != nil {
