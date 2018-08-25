@@ -23,6 +23,7 @@ type request struct {
 	Client  *http.Client
 	Debug   int
 	Cookies []*http.Cookie
+	Forms   url.Values
 }
 
 type response struct {
@@ -34,6 +35,7 @@ type response struct {
 
 type Header map[string]string
 type Params map[string]string
+type Datas  map[string]string  // for post form
 
 // {username,password}
 type Auth []string
@@ -283,6 +285,99 @@ func (resp *response) Json(v interface{}) error {
 		resp.Content()
 	}
 	return json.Unmarshal(resp.content, v)
+}
+
+/**************post*************************/
+func Post(origurl string, args ...interface{}) (resp *response) {
+	req := Requests()
+
+	// call request Get
+	resp = req.Post(origurl, args...)
+	return resp
+}
+
+func (req *request) Post(origurl string, args ...interface{}) (resp *response) {
+
+	req.httpreq.Method = "POST"
+	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+	req.Forms = url.Values{}
+
+	// set params ?a=b&b=c
+	//set Header
+	params := []map[string]string{}
+	datas := []map[string]string{}
+
+  //reset Cookies,
+	//Client.Do can copy cookie from client.Jar to req.Header
+	delete(req.httpreq.Header,"Cookie")
+
+	for _, arg := range args {
+		switch a := arg.(type) {
+		// arg is Header , set to request header
+		case Header:
+
+			for k, v := range a {
+				req.Header.Set(k, v)
+			}
+			// arg is "GET" params
+			// ?title=website&id=1860&from=login
+		case Params:
+			params = append(params, a)
+
+		case Datas:   //Post form data,packaged in body.
+			datas = append(datas,a)
+
+		case Auth:
+			// a{username,password}
+			req.httpreq.SetBasicAuth(a[0],a[1])
+		}
+	}
+
+	disturl, _ := buildURLParams(origurl, params...)
+	req.buildForms(datas...)
+	req.setBodyBytes() // set forms to body
+
+	//prepare to Do
+	URL, err := url.Parse(disturl)
+	if err != nil {
+		return nil
+	}
+	req.httpreq.URL = URL
+
+	req.ClientSetCookies()
+
+	req.RequestDebug()
+
+	res, err := req.Client.Do(req.httpreq)
+
+	if err != nil {
+		fmt.Println(err)
+		return nil
+	}
+
+	resp = &response{}
+	resp.httpresp = res
+	resp.req = req
+	resp.ResponseDebug()
+	return resp
+}
+
+func (req * request)setBodyBytes() {
+
+  // maybe
+	data := req.Forms.Encode()
+	req.httpreq.Body = ioutil.NopCloser(strings.NewReader(data))
+	req.httpreq.ContentLength = int64(len(data))
+}
+
+func (req * request)buildForms(datas ...map[string]string)  {
+
+	for _, data := range datas {
+		for key, value := range data {
+			req.Forms.Add(key, value)
+		}
+	}
+
 }
 
 /*******/

@@ -6,6 +6,7 @@ import (
 	"testing"
 )
 
+/*
 func TestGet(t *testing.T) {
 	// example 1
 	req := Requests()
@@ -83,10 +84,10 @@ func TestGet(t *testing.T) {
 	req = Requests()
 	req.Debug = 1
 
-	cookie := & http.Cookie{}
+	cookie := &http.Cookie{}
   cookie.Name   = "anewcookie"
   cookie.Value  = "20180825"
-	cookie.Path   = "/"  
+	cookie.Path   = "/"
 
 	req.SetCookie(cookie)
 
@@ -97,5 +98,31 @@ func TestGet(t *testing.T) {
 	req.Get("https://www.httpbin.org")
 	req.Get("https://www.httpbin.org/cookies/set?a=33d")
 	req.Get("https://www.httpbin.org")
+
+}
+*/
+
+func TestPost(t *testing.T) {
+
+  fmt.Println(&http.Cookie{})
+
+	req := Requests()
+	req.Debug = 1
+
+
+	data := Datas{
+	    "comments": "ew",
+	    "custemail": "a@231.com",
+	    "custname": "1",
+	    "custtel": "2",
+	    "delivery": "12:45",
+	    "size": "small",
+	    "topping": "bacon",
+	  }
+
+
+  resp := req.Post("https://www.httpbin.org/post",data)
+
+	fmt.Println(resp.Text())
 
 }
