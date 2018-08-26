@@ -12,6 +12,9 @@ import (
 	"os"
 	"crypto/tls"
 	"net/http/cookiejar"
+	"mime/multipart"
+	"bytes"
+	"io"
 
 )
 
@@ -36,6 +39,7 @@ type response struct {
 type Header map[string]string
 type Params map[string]string
 type Datas  map[string]string  // for post form
+type Files  map[string]string  // name ,filename
 
 // {username,password}
 type Auth []string
@@ -305,7 +309,8 @@ func (req *request) Post(origurl string, args ...interface{}) (resp *response) {
 	// set params ?a=b&b=c
 	//set Header
 	params := []map[string]string{}
-	datas := []map[string]string{}
+	datas := []map[string]string{} // POST
+	files := []map[string]string{} //post file
 
   //reset Cookies,
 	//Client.Do can copy cookie from client.Jar to req.Header
@@ -326,7 +331,8 @@ func (req *request) Post(origurl string, args ...interface{}) (resp *response) {
 
 		case Datas:   //Post form data,packaged in body.
 			datas = append(datas,a)
-
+		case Files:
+			files = append(files,a)
 		case Auth:
 			// a{username,password}
 			req.httpreq.SetBasicAuth(a[0],a[1])
@@ -334,9 +340,14 @@ func (req *request) Post(origurl string, args ...interface{}) (resp *response) {
 	}
 
 	disturl, _ := buildURLParams(origurl, params...)
-	req.buildForms(datas...)
-	req.setBodyBytes() // set forms to body
 
+	if len(files) > 0{
+		req.buildFilesAndForms(files,datas)
+
+	} else {
+			req.buildForms(datas...)
+			req.setBodyBytes() // set forms to body
+  }
 	//prepare to Do
 	URL, err := url.Parse(disturl)
 	if err != nil {
@@ -370,6 +381,40 @@ func (req * request)setBodyBytes() {
 	req.httpreq.ContentLength = int64(len(data))
 }
 
+func (req * request) buildFilesAndForms(files []map[string]string,datas []map[string]string){
+
+	//handle file multipart
+
+	var b bytes.Buffer
+	w := multipart.NewWriter(&b)
+
+	for _,file := range files{
+		for k,v := range file{
+			part, err := w.CreateFormFile(k, v)
+			if err != nil {
+			  fmt.Printf("Upload %s failed!",v)
+				panic(err)
+			}
+			file := openFile(v)
+			_, err = io.Copy(part, file)
+		}
+	}
+
+	for _,data := range datas{
+		for k,v := range data{
+			w.WriteField(k,v)
+		}
+	}
+
+
+  w.Close()
+  // set file header example:
+	// "Content-Type": "multipart/form-data; boundary=------------------------7d87eceb5520850c",
+	req.httpreq.Body = ioutil.NopCloser( bytes.NewReader(b.Bytes()) )
+	req.httpreq.ContentLength = int64(b.Len())
+	req.Header.Set("Content-Type", w.FormDataContentType())
+}
+
 func (req * request)buildForms(datas ...map[string]string)  {
 
 	for _, data := range datas {
@@ -378,6 +423,14 @@ func (req * request)buildForms(datas ...map[string]string)  {
 		}
 	}
 
+}
+
+func openFile(filename string)*os.File {
+    r, err := os.Open(filename)
+    if err != nil {
+        panic(err)
+    }
+    return r
 }
 
 /*******/

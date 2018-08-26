@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"testing"
+	"os"
 )
 
 /*
@@ -106,6 +107,8 @@ func TestPost(t *testing.T) {
 
   fmt.Println(&http.Cookie{})
 
+  // example 1
+	// set post formdata
 	req := Requests()
 	req.Debug = 1
 
@@ -120,9 +123,22 @@ func TestPost(t *testing.T) {
 	    "topping": "bacon",
 	  }
 
-
-  resp := req.Post("https://www.httpbin.org/post",data)
+	resp := req.Post("https://www.httpbin.org/post",data)
 
 	fmt.Println(resp.Text())
+
+
+  //example 2 upload files
+	req = Requests()
+	req.Debug = 1
+	path, _ := os.Getwd()
+  path1 := path +  "/../examples/net1.go"
+	path2 := path +  "/../examples/net2.go"
+
+  resp = req.Post("https://www.httpbin.org/post",data,Files{"a":path1,"b":path2})
+
+	fmt.Println(resp.Text())
+
+
 
 }
