@@ -24,7 +24,6 @@ golang 1.11之后，编辑一个go.mod文件
 module github.com/asmcos/requests
 ```
 
-参考[go.mod](https://github.com/asmcos/requests/blob/master/examples/go.mod)例子
 
 ## 开始使用
 
@@ -50,3 +49,49 @@ func main (){
 第一个例子为什么是它？ 因为python requests第一个例子是它。。。呵呵
 
     注意：：： `密码` 和用户名要用github真实用户才能测试。
+
+
+## 创建请求的方法
+
+### 例子1
+
+极简使用
+
+``` go
+package main
+
+import "github.com/asmcos/requests"
+
+func main (){
+
+        resp := requests.Get("http://go.xiulian.net.cn")
+        println(resp.Text())
+}
+```
+
+其实 requests实现都是先用Requests()函数创建一个 request 和 client，
+再用req.Get去请求。
+
+requests.Get 是一个封装，对Requests()和req.Get的一个封装。
+
+### 例子2
+
+这个例子是分成2个步骤，来操作，这样的好处是可以通过req来设置各种请求参数。
+后面的例子会展示各种设置。
+
+``` go
+package main
+
+import "github.com/asmcos/requests"
+
+
+func main (){
+
+        req := requests.Requests()
+
+        resp := req.Get("http://go.xiulian.net.cn",requests.Header{"Referer":"http://www.jeapedu.com"})
+
+        println(resp.Text())
+
+}
+```
