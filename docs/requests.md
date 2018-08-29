@@ -95,3 +95,19 @@ func main (){
 
 }
 ```
+
+## 设置Header
+
+```
+req := Requests()
+
+req.Header.Set("accept-encoding", "gzip, deflate, br")
+req.Get("http://go.xiulian.net.cn", requests.Header{"Referer": "http://www.jeapedu.com"})
+```
+
+!!! 设置头的2种方法
+    1. req.Header.Set
+    2. req.Get 里面加参数
+
+Get 支持动态参数，但是参数前面要加类型标示。
+函数里面根据类型判断参数的含义。
