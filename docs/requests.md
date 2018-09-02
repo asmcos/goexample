@@ -298,6 +298,15 @@ fmt.Println(resp.httpresp)
 
 和params是不同的。
 
+## saveFile
+
+接着上面的例子，如果成功了。返回的数据实际是一个jpeg格式文件。
+
+我们可以直接存文件。
+
+```
+resp.SaveFile("auth.jpeg")
+```
 
 ## JSON
 
