@@ -112,3 +112,40 @@ req.Get("http://go.xiulian.net.cn", requests.Header{"Referer": "http://www.jeape
 Get 支持动态参数，但是参数前面要加类型标识。
 
 函数里面根据类型判断参数的含义。
+
+其实 函数的参数里关于Header参数是可以多次设置的。
+
+``` go
+url1 := "http://go.xiulian.net.cn"
+req.Get(url1, requests.Header{"k0": "v0"},requests.Header{"k1":"v1"},requests.Header{"k2":"v2"})
+
+h := requests.Header{
+  "k3":"v3",
+  "k4":"v4",
+  "k5":"v5",
+}
+req.Get(url1,h)
+```
+
+这些都可以。灵活增加头。
+
+
+## 设置参数
+
+
+``` go
+p := requests.Params{
+  "title": "The blog",
+  "name":  "file",
+  "id":    "12345",
+}
+resp := Requests().Get("http://www.cpython.org", p)
+```
+
+其实参数设置。参数设置也是支持多次的。
+
+类似如下：
+
+``` go
+resp := Requests().Get("http://www.cpython.org", p,p1,p2)
+```
