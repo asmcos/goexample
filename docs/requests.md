@@ -150,6 +150,26 @@ resp := Requests().Get("http://www.cpython.org", p)
 resp := Requests().Get("http://www.cpython.org", p,p1,p2)
 ```
 
+## POST 的form表单
+
+``` go
+data := Datas{
+    "comments": "ew",
+    "custemail": "a@231.com",
+    "custname": "1",
+    "custtel": "2",
+    "delivery": "12:45",
+    "size": "small",
+    "topping": "bacon",
+  }
+
+resp := req.Post("https://www.httpbin.org/post",data)
+
+fmt.Println(resp.Text())
+```
+
+!!!! `注意` Post的form是放在body里面，而get的params 是放在url里面。
+
 
 ## Proxy
 
@@ -264,3 +284,60 @@ Via: 1.1 vegur
   "url": "https://www.httpbin.org/post"
 }
 ```
+
+## Authentication 验证用户名和密码。
+
+``` go
+req = Requests()
+url1 := "https://www.httpwatch.com/httpgallery/authentication/authenticatedimage/default.aspx?0.45874470316137206"
+resp = req.Get(url1,Auth{"httpwatch","foo"})
+fmt.Println(resp.httpresp)
+```
+
+用户名和密码的参数是加密存放在Header里面，
+
+和params是不同的。
+
+
+## JSON
+
+``` go
+req = Requests()
+req.Header.Set("Content-Type","application/json")
+resp = req.Get("https://httpbin.org/json")
+
+var json map[string]interface{}
+resp.Json(&json)
+
+for k,v := range json{
+  fmt.Println(k,v)
+}
+```
+
+## 支持GZIP格式
+
+``` go
+req = Requests()
+req.Debug = 1
+resp = req.Get("https://httpbin.org/gzip")
+
+fmt.Println(resp.Text())
+```
+
+
+## 支持传文件POST
+
+``` go
+req = Requests()
+req.Debug = 1
+path, _ := os.Getwd()
+path1 := path +  "/../examples/net1.go"
+path2 := path +  "/../examples/net2.go"
+
+resp = req.Post("https://www.httpbin.org/post",data,Files{"a":path1,"b":path2})
+
+fmt.Println(resp.Text())
+
+```
+
+header，params，是不分 GET和POST的。
