@@ -350,3 +350,20 @@ fmt.Println(resp.Text())
 ```
 
 header，params，是不分 GET和POST的。
+
+
+## 返回cookies
+
+其实requests的cookies 一直存在client.jar里面，
+
+所以需要从client.jar读取。
+
+``` go
+resp = req.Get("https://www.httpbin.org")
+coo := resp.Cookies()
+// coo is [] *http.Cookies
+println("********cookies*******")
+for _, c:= range coo{
+  fmt.Println(c.Name,c.Value)
+}
+```
