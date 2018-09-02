@@ -25,7 +25,7 @@ module github.com/asmcos/requests
 ```
 
 
-## 开始使用
+## 开始使用(带Auth)
 
 ``` go
 package main
@@ -148,4 +148,119 @@ resp := Requests().Get("http://www.cpython.org", p)
 
 ``` go
 resp := Requests().Get("http://www.cpython.org", p,p1,p2)
+```
+
+
+## Proxy
+
+目前不支持带密码验证的代理。
+
+``` go
+req = Requests()
+req.Proxy("http://192.168.1.190:8888")
+resp = req.Get("https://www.sina.com.cn")
+```
+
+## 设置Cookies
+
+requests 支持自身传递cookies。本质上是把cookies存在client.jar里面。
+用户设置的cookies也会随着client.jar来传递。
+
+``` go
+req = Requests()
+
+cookie := &http.Cookie{}
+cookie.Name   = "anewcookie"
+cookie.Value  = "20180825"
+cookie.Path   = "/"
+
+req.SetCookie(cookie)
+
+fmt.Println(req.Cookies)
+req.Get("https://www.httpbin.org/cookies/set?freeform=1234")
+req.Get("https://www.httpbin.org")
+req.Get("https://www.httpbin.org/cookies/set?a=33d")
+```
+
+
+！！！ 过程说明
+      代码中 首先使用http.Cookie生成一个用户自定义的cooie,
+      req.SetCookie 实际上还没有把cookie放在client.jar里面。
+      在Get的时候requests会把req.Cookies里面的内容复制到client.jar里面，并且清空req.cookies
+      再一次Get的时候，requests都会处理Cookies。
+
+## debug
+
+当设置了Debug = 1，请求的时候会把request和response都打印出来，
+
+包含request的cookie， 返回的cookie没有打印。
+
+``` go
+req := Requests()
+req.Debug = 1
+
+data := Datas{
+    "comments": "ew",
+    "custemail": "a@231.com",
+    "custname": "1",
+    "custtel": "2",
+    "delivery": "12:45",
+    "size": "small",
+    "topping": "bacon",
+  }
+
+resp := req.Post("https://www.httpbin.org/post",data)
+
+fmt.Println(resp.Text())
+```
+
+### Debug 结果如下
+
+``` json
+===========Go RequestDebug ============
+POST /post HTTP/1.1
+Host: www.httpbin.org
+User-Agent: Go-Requests 0.5
+Content-Length: 96
+Content-Type: application/x-www-form-urlencoded
+Accept-Encoding: gzip
+
+
+===========Go ResponseDebug ============
+HTTP/1.1 200 OK
+Content-Length: 560
+Access-Control-Allow-Credentials: true
+Access-Control-Allow-Origin: *
+Connection: keep-alive
+Content-Type: application/json
+Date: Sun, 02 Sep 2018 09:40:32 GMT
+Server: gunicorn/19.9.0
+Via: 1.1 vegur
+
+
+{
+  "args": {},
+  "data": "",
+  "files": {},
+  "form": {
+    "comments": "ew",
+    "custemail": "a@231.com",
+    "custname": "1",
+    "custtel": "2",
+    "delivery": "12:45",
+    "size": "small",
+    "topping": "bacon"
+  },
+  "headers": {
+    "Accept-Encoding": "gzip",
+    "Connection": "close",
+    "Content-Length": "96",
+    "Content-Type": "application/x-www-form-urlencoded",
+    "Host": "www.httpbin.org",
+    "User-Agent": "Go-Requests 0.5"
+  },
+  "json": null,
+  "origin": "219.143.154.50",
+  "url": "https://www.httpbin.org/post"
+}
 ```
