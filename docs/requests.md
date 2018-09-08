@@ -24,6 +24,10 @@ golang 1.11之后，编辑一个go.mod文件
 module github.com/asmcos/requests
 ```
 
+!!! 特别说明
+    由于requests代码在更新，所有例子都有是当前有效。
+    并且部分片段有上下文。请大家阅读时参考原代码的requests_test.go
+
 
 ## 开始使用(带Auth)
 
@@ -38,7 +42,7 @@ import (
 func main (){
 
         req := requests.Requests()
-        resp := req.Get("https://api.github.com/user",requests.Auth{"asmcos","password...."})
+        resp,_ := req.Get("https://api.github.com/user",requests.Auth{"asmcos","password...."})
         println(resp.Text())
         fmt.Println(resp.R.StatusCode)
         fmt.Println(resp.R.Header["Content-Type"])
@@ -64,7 +68,7 @@ import "github.com/asmcos/requests"
 
 func main (){
 
-        resp := requests.Get("http://go.xiulian.net.cn")
+        resp,_ := requests.Get("http://go.xiulian.net.cn")
         println(resp.Text())
 }
 ```
@@ -89,7 +93,7 @@ func main (){
 
         req := requests.Requests()
 
-        resp := req.Get("http://go.xiulian.net.cn",requests.Header{"Referer":"http://www.jeapedu.com"})
+        resp,_ := req.Get("http://go.xiulian.net.cn",requests.Header{"Referer":"http://www.jeapedu.com"})
 
         println(resp.Text())
 
@@ -139,7 +143,7 @@ p := requests.Params{
   "name":  "file",
   "id":    "12345",
 }
-resp := Requests().Get("http://www.cpython.org", p)
+resp,_ := Requests().Get("http://www.cpython.org", p)
 ```
 
 其实参数设置。参数设置也是支持多次的。
@@ -147,7 +151,7 @@ resp := Requests().Get("http://www.cpython.org", p)
 类似如下：
 
 ``` go
-resp := Requests().Get("http://www.cpython.org", p,p1,p2)
+resp,_ := Requests().Get("http://www.cpython.org", p,p1,p2)
 ```
 
 ## POST 的form表单
@@ -163,7 +167,7 @@ data := Datas{
     "topping": "bacon",
   }
 
-resp := req.Post("https://www.httpbin.org/post",data)
+resp,_ := req.Post("https://www.httpbin.org/post",data)
 
 fmt.Println(resp.Text())
 ```
@@ -178,7 +182,7 @@ fmt.Println(resp.Text())
 ``` go
 req = Requests()
 req.Proxy("http://192.168.1.190:8888")
-resp = req.Get("https://www.sina.com.cn")
+resp,_ = req.Get("https://www.sina.com.cn")
 ```
 
 ## 设置Cookies
@@ -229,7 +233,7 @@ data := Datas{
     "topping": "bacon",
   }
 
-resp := req.Post("https://www.httpbin.org/post",data)
+resp,_ := req.Post("https://www.httpbin.org/post",data)
 
 fmt.Println(resp.Text())
 ```
@@ -290,7 +294,7 @@ Via: 1.1 vegur
 ``` go
 req = Requests()
 url1 := "https://www.httpwatch.com/httpgallery/authentication/authenticatedimage/default.aspx?0.45874470316137206"
-resp = req.Get(url1,Auth{"httpwatch","foo"})
+resp,_ = req.Get(url1,Auth{"httpwatch","foo"})
 fmt.Println(resp.httpresp)
 ```
 
@@ -313,7 +317,7 @@ resp.SaveFile("auth.jpeg")
 ``` go
 req = Requests()
 req.Header.Set("Content-Type","application/json")
-resp = req.Get("https://httpbin.org/json")
+resp,_ = req.Get("https://httpbin.org/json")
 
 var json map[string]interface{}
 resp.Json(&json)
@@ -328,7 +332,7 @@ for k,v := range json{
 ``` go
 req = Requests()
 req.Debug = 1
-resp = req.Get("https://httpbin.org/gzip")
+resp,_ = req.Get("https://httpbin.org/gzip")
 
 fmt.Println(resp.Text())
 ```
@@ -343,7 +347,7 @@ path, _ := os.Getwd()
 path1 := path +  "/../examples/net1.go"
 path2 := path +  "/../examples/net2.go"
 
-resp = req.Post("https://www.httpbin.org/post",data,Files{"a":path1,"b":path2})
+resp,_ = req.Post("https://www.httpbin.org/post",data,Files{"a":path1,"b":path2})
 
 fmt.Println(resp.Text())
 
@@ -359,7 +363,7 @@ header，params，是不分 GET和POST的。
 所以需要从client.jar读取。
 
 ``` go
-resp = req.Get("https://www.httpbin.org")
+resp,_ = req.Get("https://www.httpbin.org")
 coo := resp.Cookies()
 // coo is [] *http.Cookies
 println("********cookies*******")
