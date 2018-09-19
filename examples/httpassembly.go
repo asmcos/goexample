@@ -49,13 +49,12 @@ func (h *httpStreamFactory) New(net, transport gopacket.Flow) tcpassembly.Stream
 		transport: transport,
 		r:         tcpreader.NewReaderStream(),
 	}
-	src,_ := transport.Endpoints()
-	
 
+
+	src,_ := transport.Endpoints()	
 	if fmt.Sprintf("%v",src) == "80" {
 		go hstream.runResponse() // Important... we must guarantee that data from the reader stream is read.
 	} else {
-	
 		go hstream.runRequest() // Important... we must guarantee that data from the reader stream is read.
 	}
 
@@ -66,29 +65,29 @@ func (h *httpStreamFactory) New(net, transport gopacket.Flow) tcpassembly.Stream
 func (h *httpStream) runResponse() {
 
 	buf := bufio.NewReader(&h.r)
-
+	defer tcpreader.DiscardBytesToEOF(buf)
 	for {
 		resp, err := http.ReadResponse(buf,nil)
-		if err == io.EOF {
+		if err == io.EOF || err == io.ErrUnexpectedEOF {
 			// We must read until we see an EOF... very important!
 			return
 		} else if err != nil {
 			log.Println("Error reading stream", h.net, h.transport, ":", err)
-			tcpreader.DiscardBytesToEOF(buf)
 			return 
 		} else {
 			bodyBytes := tcpreader.DiscardBytesToEOF(resp.Body)
 			resp.Body.Close()
-			log.Println("Received response from stream", h.net, h.transport, ":", resp, "with", bodyBytes, "bytes in request body")
+			log.Println("Received response from stream", h.net, h.transport, ":", resp, "with", bodyBytes, "bytes in response body")
 		}
 	}
 }
 func (h *httpStream) runRequest() {
 
 	buf := bufio.NewReader(&h.r)
+	defer tcpreader.DiscardBytesToEOF(buf)
 	for {
 		req, err := http.ReadRequest(buf)
-		if err == io.EOF {
+		if err == io.EOF || err == io.ErrUnexpectedEOF {
 			// We must read until we see an EOF... very important!
 			return
 		} else if err != nil {
@@ -149,7 +148,6 @@ func main() {
 			}
 			tcp := packet.TransportLayer().(*layers.TCP)
 			assembler.AssembleWithTimestamp(packet.NetworkLayer().NetworkFlow(), tcp, packet.Metadata().Timestamp)
-
 		case <-ticker:
 			// Every minute, flush connections that haven't seen activity in the past 2 minutes.
 			assembler.FlushOlderThan(time.Now().Add(time.Minute * -2))
