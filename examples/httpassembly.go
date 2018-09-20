@@ -77,7 +77,8 @@ func (h *httpStream) runResponse() {
 		} else {
 			bodyBytes := tcpreader.DiscardBytesToEOF(resp.Body)
 			resp.Body.Close()
-			log.Println("Received response from stream", h.net, h.transport, ":", resp, "with", bodyBytes, "bytes in response body")
+			printResponse(resp,h,bodyBytes)
+			// log.Println("Received response from stream", h.net, h.transport, ":", resp, "with", bodyBytes, "bytes in response body")
 		}
 	}
 }
@@ -95,9 +96,33 @@ func (h *httpStream) runRequest() {
 		} else {
 			bodyBytes := tcpreader.DiscardBytesToEOF(req.Body)
 			req.Body.Close()
-			log.Println("Received request from stream", h.net, h.transport, ":", req, "with", bodyBytes, "bytes in request body")
+			printRequest(req,h,bodyBytes)
+			// log.Println("Received request from stream", h.net, h.transport, ":", req, "with", bodyBytes, "bytes in request body")
 		}
 	}
+}
+
+func printHeader(h http.Header){
+	for k,v := range h{
+		fmt.Println(k,v)
+	}
+}
+
+func printRequest(req *http.Request,h *httpStream,bodyBytes int){
+
+	fmt.Println("\n\r\n\r")
+	fmt.Println(h.net,h.transport)
+	fmt.Println("\n\r")
+	fmt.Println(req.Method, req.RequestURI, req.Proto)
+	printHeader(req.Header)
+
+}
+
+func printResponse(resp *http.Response,h *httpStream,bodyBytes int){
+
+	fmt.Println("\n\r")
+	fmt.Println(resp.Proto, resp.Status)
+	printHeader(resp.Header)
 }
 
 
