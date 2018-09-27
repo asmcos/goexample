@@ -4,7 +4,8 @@ pages:
     - net: net.md
     - net/url: url.md
     - net/http: http.md
-    
+    - requests: requests.md
+
 theme:
   name: 'material'
 markdown_extensions:
