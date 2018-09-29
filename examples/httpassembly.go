@@ -29,7 +29,7 @@ import (
 var iface = flag.String("i", "en0", "Interface to get packets from")
 var fname = flag.String("r", "", "Filename to read from, overrides -i")
 var snaplen = flag.Int("s", 1600, "SnapLen for pcap packet capture")
-var filter = flag.String("f", "tcp and port 80", "BPF filter for pcap")
+var filter = flag.String("f", "tcp and portrange 80-443", "BPF filter for pcap")
 var logAllPackets = flag.Bool("v", false, "Logs every packet in great detail")
 
 // Build a simple HTTP request parser using tcpassembly.StreamFactory and tcpassembly.Stream interfaces
@@ -51,15 +51,54 @@ func (h *httpStreamFactory) New(net, transport gopacket.Flow) tcpassembly.Stream
 	}
 
 
-	src,_ := transport.Endpoints()	
-	if fmt.Sprintf("%v",src) == "80" {
+	src,dst := transport.Endpoints()	
+	if fmt.Sprintf("%v",src) == "80"{
 		go hstream.runResponse() // Important... we must guarantee that data from the reader stream is read.
-	} else {
+	} else
+	if fmt.Sprintf("%v",dst) == "80"{
 		go hstream.runRequest() // Important... we must guarantee that data from the reader stream is read.
+	} else
+	if fmt.Sprintf("%v",dst) == "443" {
+		go hstream.runRequests()
+	} else {
+		go hstream.run()
 	}
 
 	// ReaderStream implements tcpassembly.Stream, so we can return a pointer to it.
 	return &hstream.r
+}
+
+func (h * httpStream) runRequests(){
+	reader := bufio.NewReader(&h.r)
+	
+	defer tcpreader.DiscardBytesToEOF(reader)
+	
+	log.Println(h.net, h.transport)
+
+	for {
+		data := make([]byte,1024)
+		n,err := reader.Read(data)
+		if err == io.EOF{
+			return
+		}
+		log.Println(data[:n])	
+	}
+}
+
+func (h *httpStream) run(){
+	reader := bufio.NewReader(&h.r)
+	defer tcpreader.DiscardBytesToEOF(reader)
+
+	log.Println(h.net, h.transport)
+	for {
+		data := make([]byte,1024)
+		n,err := reader.Read(data)
+		if err == io.EOF{
+			return
+		}
+		log.Println(data[:n])	
+	}
+
 }
 
 func (h *httpStream) runResponse() {
