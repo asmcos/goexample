@@ -5,6 +5,7 @@ pages:
     - net/url: url.md
     - net/http: http.md
     - requests: requests.md
+    - gin: gin.md
 
 theme:
   name: 'material'

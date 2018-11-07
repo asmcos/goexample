@@ -26,7 +26,7 @@ import (
 	"github.com/google/gopacket/tcpassembly/tcpreader"
 )
 
-var iface = flag.String("i", "en0", "Interface to get packets from")
+var iface = flag.String("i", "lo0", "Interface to get packets from")
 var fname = flag.String("r", "", "Filename to read from, overrides -i")
 var snaplen = flag.Int("s", 1600, "SnapLen for pcap packet capture")
 var filter = flag.String("f", "tcp and portrange 80-443", "BPF filter for pcap")
@@ -76,12 +76,12 @@ func (h * httpStream) runRequests(){
 	log.Println(h.net, h.transport)
 
 	for {
-		data := make([]byte,1024)
+		data := make([]byte,1600)
 		n,err := reader.Read(data)
 		if err == io.EOF{
 			return
 		}
-		log.Println(data[:n])	
+		log.Printf("[% x]",data[:n])	
 	}
 }
 
@@ -91,12 +91,12 @@ func (h *httpStream) run(){
 
 	log.Println(h.net, h.transport)
 	for {
-		data := make([]byte,1024)
+		data := make([]byte,1600)
 		n,err := reader.Read(data)
 		if err == io.EOF{
 			return
 		}
-		log.Println(data[:n])	
+		log.Printf("[% x]",data[:n])	
 	}
 
 }
